@@ -16,6 +16,8 @@ import (
 type AzureProvider struct {
 	*ProviderData
 	Tenant string
+	GroupValidator func(string) bool
+	AllowedGroups []string
 }
 
 // NewAzureProvider initiates a new AzureProvider
@@ -40,7 +42,13 @@ func NewAzureProvider(p *ProviderData) *AzureProvider {
 		p.Scope = "openid"
 	}
 
-	return &AzureProvider{ProviderData: p}
+	return &AzureProvider{
+		ProviderData: p,
+		// default validator, allways pass
+		GroupValidator: func(email string) bool {
+			return true
+		},
+	}
 }
 
 // Configure defaults the AzureProvider configuration options
@@ -63,6 +71,17 @@ func (p *AzureProvider) Configure(tenant string) {
 			Path:   "/" + p.Tenant + "/oauth2/token",
 		}
 	}
+}
+
+func (p *AzureProvider) SetGroupRestriction(groups []string) {
+	p.AllowedGroups = groups
+}
+
+func (p *AzureProvider) getGroupsFromJson(json *simplejson.Json) ([]string, error) {
+	var groups []string
+	var err error
+	groups, err = json.Get("groups").StringArray()
+	return groups, err
 }
 
 func getAzureHeader(accessToken string) http.Header {
@@ -103,6 +122,8 @@ func (p *AzureProvider) GetEmailAddress(s *sessions.SessionState) (string, error
 	req.Header = getAzureHeader(s.AccessToken)
 
 	json, err := requests.Request(req)
+
+
 
 	if err != nil {
 		return "", err

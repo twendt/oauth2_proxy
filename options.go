@@ -42,6 +42,7 @@ type Options struct {
 
 	AuthenticatedEmailsFile  string   `flag:"authenticated-emails-file" cfg:"authenticated_emails_file" env:"OAUTH2_PROXY_AUTHENTICATED_EMAILS_FILE"`
 	AzureTenant              string   `flag:"azure-tenant" cfg:"azure_tenant" env:"OAUTH2_PROXY_AZURE_TENANT"`
+	AzureGroups              []string `flag:"azure-groups" cfg:"azure_groups" env:"OAUTH2_PROXY_AZURE_GROUPS"`
 	EmailDomains             []string `flag:"email-domain" cfg:"email_domains" env:"OAUTH2_PROXY_EMAIL_DOMAINS"`
 	WhitelistDomains         []string `flag:"whitelist-domain" cfg:"whitelist_domains" env:"OAUTH2_PROXY_WHITELIST_DOMAINS"`
 	GitHubOrg                string   `flag:"github-org" cfg:"github_org" env:"OAUTH2_PROXY_GITHUB_ORG"`
@@ -393,6 +394,7 @@ func parseProviderInfo(o *Options, msgs []string) []string {
 	o.provider = providers.New(o.Provider, p)
 	switch p := o.provider.(type) {
 	case *providers.AzureProvider:
+		p.SetGroupRestriction(o.AzureGroups)
 		p.Configure(o.AzureTenant)
 	case *providers.GitHubProvider:
 		p.SetOrgTeam(o.GitHubOrg, o.GitHubTeam)
