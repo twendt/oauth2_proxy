@@ -60,7 +60,9 @@ func (p *AzureOIDCProvider) GetLoginURL(redirectURI, state string) string {
 	params.Set("response_mode", "form_post")
 	params.Add("scope", p.Scope)
 	params.Add("state", state)
-	params.Set("prompt", p.ApprovalPrompt)
+	if p.Prompt != "" {
+		params.Set("prompt", p.Prompt)
+	}
 	params.Set("nonce", randSeq(32))
 	a.RawQuery = params.Encode()
 	return a.String()

@@ -104,7 +104,7 @@ type Options struct {
 	ProtectedResource                  string `flag:"resource" cfg:"resource" env:"OAUTH2_PROXY_RESOURCE"`
 	ValidateURL                        string `flag:"validate-url" cfg:"validate_url" env:"OAUTH2_PROXY_VALIDATE_URL"`
 	Scope                              string `flag:"scope" cfg:"scope" env:"OAUTH2_PROXY_SCOPE"`
-	Prompt                           string `flag:"prompt" cfg:"prompt" env:"OAUTH2_PROXY_PROMPT"`
+	Prompt                             string `flag:"prompt" cfg:"prompt" env:"OAUTH2_PROXY_PROMPT"`
 	ApprovalPrompt                     string `flag:"approval-prompt" cfg:"approval_prompt" env:"OAUTH2_PROXY_APPROVAL_PROMPT"` // Deprecated by OIDC 1.0
 
 	// Configuration values for logging
@@ -451,7 +451,7 @@ func parseProviderInfo(o *Options, msgs []string) []string {
 		p.PermittedGroups = o.AzureOidcGroups
 		p.ExemptedEmails = o.AzureOidcExemptedEmails
 		p.AllowUnverifiedEmail = o.InsecureOIDCAllowUnverifiedEmail
-		p.ApprovalPrompt = o.ApprovalPrompt
+		p.Prompt = o.Prompt
 		p.Scope = o.Scope
 		if o.oidcVerifier == nil {
 			msgs = append(msgs, "azure-oidc provider requires an oidc issuer URL")
