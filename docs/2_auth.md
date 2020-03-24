@@ -95,8 +95,11 @@ Note: When using the Azure Auth provider with nginx and the cookie session store
 
 1. Go to [https://portal.azure.com](https://portal.azure.com), and create new "App Registration".
 1. Go to **"Authentication"** page and configure addresses for your applications: `https://internal.yourcompany.com/oauth2/callback`
-1. Go to **"Manifest"** page and enable group support in ID tokens by adding `groupMembershipClaims` entry 
-    ```json
+1. (optional) Go to **"Manifest"** page and enable group support in ID tokens by adding `groupMembershipClaims` entry 
+   
+   This step is only required if `--azure-permitted-groups` is used.
+   
+   ```json
     {
       "groupMembershipClaims": "SecurityGroup",
       ...
@@ -114,7 +117,7 @@ Note: When using the Azure Auth provider with nginx and the cookie session store
 
 NOTE: This provider doesn't support Azure Active Directory (v1.0) endpoints.
 
-NOTE: If `--azure-permitted-groups` is not specified, all logged users are authorized
+NOTE: If `--azure-permitted-groups` is not specified, all users in the configured Azure tenant are authorized
 
 NOTE: If a user is a member of a large number of groups, the ID token may become larger and be unable to be stored within a single cookie. It is recommended to use Redis for session storage with Azure.
 
