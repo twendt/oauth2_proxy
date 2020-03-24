@@ -19,11 +19,16 @@ Valid providers are :
 - [Keycloak](#keycloak-auth-provider)
 - [GitLab](#gitlab-auth-provider)
 - [LinkedIn](#linkedin-auth-provider)
+- [Microsoft Azure AD](#microsoft-azure-ad-provider)
+- [OpenID Connect](#openid-connect-provider)
 - [login.gov](#logingov-provider)
 - [Nextcloud](#nextcloud-provider)
 - [DigitalOcean](#digitalocean-auth-provider)
+- [Bitbucket](#bitbucket-auth-provider)
 
 The provider can be selected using the `provider` configuration value.
+
+Please note that not all provides support all claims. The `preferred_username` claim is currently only supported by the OpenID Connect provider.
 
 ### Google Auth Provider
 
@@ -84,7 +89,7 @@ Note: The user is checked against the group members list on initial authenticati
    --client-secret=<value from step 6>
 ```
 
-Note: When using the Azure Auth provider with nginx and the cookie session store you may find the cookie is too large and doesn't get passed through correctly. Increasing the proxy_buffer_size in nginx or implementing the [redis session storage](configuration#redis-storage) should resolve this.
+Note: When using the Azure Auth provider with nginx and the cookie session store you may find the cookie is too large and doesn't get passed through correctly. Increasing the proxy_buffer_size in nginx or implementing the [redis session storage](configuration/sessions#redis-storage) should resolve this.
 
 ### Azure OIDC Auth Provider
 
@@ -365,6 +370,27 @@ To use the provider, pass the following options:
 ```
 
  Alternatively, set the equivalent options in the config file. The redirect URL defaults to `https://<requested host header>/oauth2/callback`. If you need to change it, you can use the `--redirect-url` command-line option.
+
+### Bitbucket Auth Provider
+
+1. [Add a new OAuth consumer](https://confluence.atlassian.com/bitbucket/oauth-on-bitbucket-cloud-238027431.html)
+    * In "Callback URL" use `https://<oauth2-proxy>/oauth2/callback`, substituting `<oauth2-proxy>` with the actual hostname that oauth2_proxy is running on.
+    * In Permissions section select:
+        * Account -> Email
+        * Team membership -> Read
+        * Repositories -> Read
+2. Note the Client ID and Client Secret.
+
+To use the provider, pass the following options:
+
+```
+   --provider=bitbucket
+   --client-id=<Client ID>
+   --client-secret=<Client Secret>
+```
+
+The default configuration allows everyone with Bitbucket account to authenticate. To restrict the access to the team members use additional configuration option: `--bitbucket-team=<Team name>`. To restrict the access to only these users who has access to one selected repository use `--bitbucket-repository=<Repository name>`.
+
 
 ## Email Authentication
 
