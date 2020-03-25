@@ -47,6 +47,7 @@ type Options struct {
 	KeycloakGroup            string   `flag:"keycloak-group" cfg:"keycloak_group" env:"OAUTH2_PROXY_KEYCLOAK_GROUP"`
 	AzureTenant              string   `flag:"azure-tenant" cfg:"azure_tenant" env:"OAUTH2_PROXY_AZURE_TENANT"`
 	AzureOidcGroups          []string `flag:"azure-permitted-groups" cfg:"azure_permitted_groups" env:"OAUTH2_PROXY_AZURE_PERMITTED_GROUPS"`
+	AzureOidcRoles           []string `flag:"azure-permitted-roles" cfg:"azure_permitted_roles" env:"OAUTH2_PROXY_AZURE_PERMITTED_ROLES"`
 	AzureOidcExemptedEmails  []string `flag:"azure-exempted-emails" cfg:"azure_exempted_emails" env:"OAUTH2_PROXY_AZURE_EXEMPTED_EMAILS"`
 	BitbucketTeam            string   `flag:"bitbucket-team" cfg:"bitbucket_team" env:"OAUTH2_PROXY_BITBUCKET_TEAM"`
 	BitbucketRepository      string   `flag:"bitbucket-repository" cfg:"bitbucket_repository" env:"OAUTH2_PROXY_BITBUCKET_REPOSITORY"`
@@ -449,6 +450,7 @@ func parseProviderInfo(o *Options, msgs []string) []string {
 		p.SetRepository(o.BitbucketRepository)
 	case *providers.AzureOIDCProvider:
 		p.PermittedGroups = o.AzureOidcGroups
+		p.PermittedRoles = o.AzureOidcRoles
 		p.ExemptedEmails = o.AzureOidcExemptedEmails
 		p.AllowUnverifiedEmail = o.InsecureOIDCAllowUnverifiedEmail
 		p.Prompt = o.Prompt

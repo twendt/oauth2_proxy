@@ -18,12 +18,14 @@ type AzureOIDCProvider struct {
 	*OIDCProvider
 	PermittedGroups []string
 	ExemptedEmails  []string
+	PermittedRoles  []string
 }
 
 type AzureOIDCClaims struct {
 	*OIDCClaims
 	Groups            []string `json:"groups"`
 	PreferredUsername string   `json:"preferred_username"`
+	Roles             []string `json:"roles"`
 }
 
 // NewAzureOIDCProvider initiates a new AzureOIDCProvider
@@ -55,7 +57,7 @@ func (p *AzureOIDCProvider) GetLoginURL(redirectURI, state string) string {
 		panic(err)
 	}
 	params.Set("client_id", p.ClientID)
-	params.Set("response_type", "id_token code")
+	params.Set("response_type", "code")
 	params.Set("redirect_uri", redirectURI)
 	params.Set("response_mode", "form_post")
 	params.Add("scope", p.Scope)
@@ -173,16 +175,6 @@ func (p *AzureOIDCProvider) SetGroupExemptions(exemptedEmails []string) {
 }
 
 func (p *AzureOIDCProvider) ValidateGroup(session *sessions.SessionState) bool {
-	// configuration doesn't restrict access via groups
-	if len(p.PermittedGroups) == 0 {
-		return true
-	}
-	for _, exemptedEmail := range p.ExemptedEmails {
-		if session.Email == exemptedEmail {
-			return true
-		}
-	}
-
 	if session.IDToken == "" {
 		logger.Printf("missing ID token. cannot validate session")
 		return false
@@ -194,6 +186,41 @@ func (p *AzureOIDCProvider) ValidateGroup(session *sessions.SessionState) bool {
 		logger.Printf("error: failed to parse IDToken, %s", err)
 		return false
 	}
+
+	for _, exemptedEmail := range p.ExemptedEmails {
+		if session.Email == exemptedEmail {
+			return true
+		}
+	}
+	if p.validateGroup(claims) && p.validateRole(claims) {
+		return true
+	}
+
+	return false
+}
+
+func (p *AzureOIDCProvider) validateRole(claims AzureOIDCClaims) bool {
+	if len(p.PermittedRoles) == 0 {
+		return true
+	}
+
+	for _, tokenRole := range claims.Roles {
+		for _, permittedRole := range p.PermittedRoles {
+			if tokenRole == permittedRole {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+func (p *AzureOIDCProvider) validateGroup(claims AzureOIDCClaims) bool {
+	// configuration doesn't restrict access via groups
+	if len(p.PermittedGroups) == 0 {
+		return true
+	}
+
 	for _, tokenGroup := range claims.Groups {
 		for _, permittedGroup := range p.PermittedGroups {
 			if tokenGroup == permittedGroup {
