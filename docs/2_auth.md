@@ -94,8 +94,8 @@ Note: When using the Azure Auth provider with nginx and the cookie session store
 ### Azure OIDC Auth Provider
 
 1. Go to [https://portal.azure.com](https://portal.azure.com), and create new "App Registration".
-1. Go to **"Authentication"** page and configure addresses for your applications: `https://internal.yourcompany.com/oauth2/callback`
-1. (optional) Go to **"Manifest"** page and enable group support in ID tokens by adding `groupMembershipClaims` entry 
+2. Go to **"Authentication"** page and configure addresses for your applications: `https://internal.yourcompany.com/oauth2/callback`
+3. (optional) Go to **"Manifest"** page and enable group support in ID tokens by adding `groupMembershipClaims` entry 
    
    This step is only required if `--azure-permitted-groups` is used.
    
@@ -105,19 +105,55 @@ Note: When using the Azure Auth provider with nginx and the cookie session store
       ...
     }
     ```
-1. Go to **"Certificates & secrets"** settings, create a new secret and store it safely. After you close the page, you won't be able to read it again.
-1. Go to **"Overview"** page to check tenant ID and client ID of "App Registration"
-1. Start oauth2-proxy with given settings
+4. (optional) Go to **"Manifest"** page and add an app role 
+   
+   This step is only required if `--azure-permitted-roles` is used.
+   
+   NOTE: Every role has to have a unique id. On Linux this can be created with `uuidgen` for instance.
+  
+          ```
+          "appRoles": [
+          		{
+          			"allowedMemberTypes": [
+          				"User"
+          			],
+          			"description": "OAuth Proxy Users",
+          			"displayName": "OAuth Proxy Users",
+          			"id": "SOME_UNIQUE_ID",
+          			"isEnabled": true,
+          			"lang": null,
+          			"origin": "Application",
+          			"value": "OAuthProxyUsers"
+          		}
+          	],
+          ```
+4. Go to **"Certificates & secrets"** settings, create a new secret and store it safely. After you close the page, you won't be able to read it again.
+5. Go to **"Overview"** page to check tenant ID and client ID of "App Registration"
+6. Start oauth2-proxy with given settings
     ```
     --azure-permitted-groups=<comma separated list of group object ids>
+    --azure-permitted-roles=<comma separated app roles, i.e. OAuthProxyUsers from the sample above>
     --oidc-issuer-url=https://login.microsoftonline.com/<tenant_id>/v2.0
     --provider=azure-oidc
    ```
+7. (optional) Enable refreshing the token
 
+   By adding `offline_access` to the scopes the provider will also request a refresh token and refresh the token after the configured
+   refresh duration. This ensures that the group and role information is kept up to date.
+   
+   ```
+   --cookie-refresh=50m
+   --scope="email openid profile offline_access"
+   ```
+NOTE: One of the following options is also required as this provider requires the ID token to be stored in the oauth cookie:
+- --set-authorization-header
+- --pass-access-token
+- --pass-authorization-header
+- --cookie-refresh != 0
 
 NOTE: This provider doesn't support Azure Active Directory (v1.0) endpoints.
 
-NOTE: If `--azure-permitted-groups` is not specified, all users in the configured Azure tenant are authorized
+NOTE: If `--azure-permitted-groups` and `--azure-permitted_roles` are not specified, all users in the configured Azure tenant are authorized
 
 NOTE: If a user is a member of a large number of groups, the ID token may become larger and be unable to be stored within a single cookie. It is recommended to use Redis for session storage with Azure.
 
