@@ -93,14 +93,6 @@ func (p *AzureOIDCProvider) Redeem(redirectURL, code string) (s *sessions.Sessio
 	return
 }
 
-func (p *AzureOIDCProvider) RefreshSessionIfNeeded(s *sessions.SessionState) (bool, error) {
-	return p.OIDCProvider.RefreshSessionIfNeeded(s)
-}
-
-func (p *AzureOIDCProvider) redeemRefreshToken(s *sessions.SessionState) (err error) {
-	return p.OIDCProvider.redeemRefreshToken(s)
-}
-
 func (p *AzureOIDCProvider) createSessionState(ctx context.Context, token *oauth2.Token) (*sessions.SessionState, error) {
 	rawIDToken, ok := token.Extra("id_token").(string)
 	if !ok {
@@ -161,17 +153,6 @@ func (p *AzureOIDCProvider) createSessionState(ctx context.Context, token *oauth
 		Email:        claims.Email,
 		User:         claims.PreferredUsername,
 	}, nil
-}
-func (p *AzureOIDCProvider) ValidateSessionState(s *sessions.SessionState) bool {
-	return p.OIDCProvider.ValidateSessionState(s)
-}
-
-func (p *AzureOIDCProvider) SetGroupRestriction(groups []string) {
-	p.PermittedGroups = groups
-}
-
-func (p *AzureOIDCProvider) SetGroupExemptions(exemptedEmails []string) {
-	p.ExemptedEmails = exemptedEmails
 }
 
 func (p *AzureOIDCProvider) ValidateGroup(session *sessions.SessionState) bool {
